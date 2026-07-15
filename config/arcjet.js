@@ -1,5 +1,5 @@
-import arcjet, {shield, detectBot, tokenBucket} from "@arcjet/node";
-import {ARCJET_KEY} from './env.js'
+import arcjet, { shield, detectBot, tokenBucket } from "@arcjet/node";
+import { ARCJET_KEY, ARCJET_ENV } from './env.js';
 
 const aj = arcjet({
     key: ARCJET_KEY,
@@ -7,23 +7,16 @@ const aj = arcjet({
     rules: [
         shield({ mode: "LIVE" }),
         detectBot({
-            mode: "LIVE",
+            mode: ARCJET_ENV === 'production' ? 'LIVE' : 'DRY_RUN',
             allow: [
-                "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
-                // Uncomment to allow these other common bot categories
-                // See the full list at https://arcjet.com/bot-list
-                //"CATEGORY:MONITOR", // Uptime monitoring services
-                //"CATEGORY:PREVIEW", // Link previews e.g. Slack, Discord
+                "CATEGORY:SEARCH_ENGINE",
             ],
         }),
         tokenBucket({
             mode: "LIVE",
-            // Tracked by IP address by default, but this can be customized
-            // See https://docs.arcjet.com/fingerprints
-            //characteristics: ["ip.src"],
-            refillRate: 5, // Refill 5 tokens per interval
-            interval: 10, // Refill every 10 seconds
-            capacity: 10, // Bucket capacity of 10 tokens
+            refillRate: 5,
+            interval: 10,
+            capacity: 10,
         }),
     ],
 });
