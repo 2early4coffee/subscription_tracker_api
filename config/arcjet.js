@@ -10,6 +10,8 @@ const aj = arcjet({
             mode: NODE_ENV === 'production' ? 'LIVE' : 'DRY_RUN',
             allow: [
                 "CATEGORY:SEARCH_ENGINE",
+                "CATEGORY:MONITOR",
+                "CATEGORY:PREVIEW",
             ],
         }),
         tokenBucket({
