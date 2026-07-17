@@ -1,6 +1,10 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import { PORT } from "./config/env.js";
+import helmet from 'helmet';
+import cors from 'cors';
+import morgan from 'morgan';
+
+import { PORT, NODE_ENV } from "./config/env.js";
 import userRouter from './routes/user.routes.js';
 import authRouter from './routes/auth.routes.js';
 import subscriptionRouter from './routes/subscription.routes.js';
@@ -10,6 +14,19 @@ import arcjetMiddleware from './middlewares/arcjet.middleware.js';
 import workflowRouter from './routes/workflow.routes.js';
 
 const app = express();
+
+// security headers
+app.use(helmet());
+
+// CORS
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// logging
+app.use(morgan(NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
