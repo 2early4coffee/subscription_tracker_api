@@ -16,4 +16,5 @@ export const {
     QSTASH_URL,
     SERVER_URL,
     EMAIL_PASSWORD,
+    ALLOWED_IPS,
 } = process.env;

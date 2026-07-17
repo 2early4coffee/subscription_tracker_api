@@ -1,8 +1,12 @@
-import aj from '../config/arcjet.js';
+import aj, { isAllowedIp } from '../config/arcjet.js';
 
 const arcjetMiddleware = async (req, res, next) => {
     try {
-        const decision = await aj.protect(req, {requested: 1});
+        const ip = req.ip || req.headers['x-forwarded-for'];
+
+        if (isAllowedIp(ip)) return next();
+
+        const decision = await aj.protect(req, { requested: 1 });
 
         if (decision.isDenied()) {
             if (decision.reason.isRateLimit())
