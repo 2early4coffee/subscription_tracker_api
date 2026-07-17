@@ -12,7 +12,8 @@ export const getUsers = async (req, res, next) => {
 
 export const getUser = async (req, res, next) => {
     try {
-        const user = await User.findById(req.params.id).select('-password');
+        const user = await User.findById(req.params.id)
+            .select('-password -refreshToken -passwordResetToken -passwordResetExpires');
 
         if (!user) {
             const error = new Error('User not found');

@@ -14,6 +14,14 @@ const generateAccessToken = (userId) =>
 const generateRefreshToken = (userId) =>
     jwt.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
 
+const sanitizeUser = (user) => ({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+});
+
 export const signUp = async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -48,7 +56,7 @@ export const signUp = async (req, res, next) => {
             data: {
                 accessToken,
                 refreshToken,
-                user: newUser[0],
+                user: sanitizeUser(newUser[0]),
             }
         });
     } catch (error) {
@@ -88,7 +96,7 @@ export const signIn = async (req, res, next) => {
             data: {
                 accessToken,
                 refreshToken,
-                user,
+                user: sanitizeUser(user),
             }
         });
     } catch (error) {
@@ -127,10 +135,8 @@ export const refreshToken = async (req, res, next) => {
             throw error;
         }
 
-        // verify refresh token
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
 
-        // find user with matching refresh token
         const user = await User.findOne({ _id: decoded.userId, refreshToken });
         if (!user) {
             const error = new Error('Invalid refresh token');
@@ -138,7 +144,6 @@ export const refreshToken = async (req, res, next) => {
             throw error;
         }
 
-        // generate new tokens
         const newAccessToken = generateAccessToken(user._id);
         const newRefreshToken = generateRefreshToken(user._id);
 
@@ -169,15 +174,13 @@ export const forgotPassword = async (req, res, next) => {
             throw error;
         }
 
-        // generate reset token
         const resetToken = crypto.randomBytes(32).toString('hex');
         const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
         user.passwordResetToken = hashedToken;
-        user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+        user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
         await user.save();
 
-        // send reset email
         const resetURL = `${req.protocol}://${req.get('host')}/api/v1/auth/reset-password/${resetToken}`;
 
         await transporter.sendMail({
@@ -213,7 +216,6 @@ export const resetPassword = async (req, res, next) => {
         const { token } = req.params;
         const { password } = req.body;
 
-        // hash the token to compare with stored one
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
         const user = await User.findOne({
@@ -227,7 +229,6 @@ export const resetPassword = async (req, res, next) => {
             throw error;
         }
 
-        // update password
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
         user.passwordResetToken = null;

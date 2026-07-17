@@ -2,7 +2,10 @@ import aj, { isAllowedIp } from '../config/arcjet.js';
 
 const arcjetMiddleware = async (req, res, next) => {
     try {
-        const ip = req.ip || req.headers['x-forwarded-for'];
+        const forwarded = req.headers['x-forwarded-for'];
+        const ip = forwarded ? forwarded.split(',')[0].trim() : req.ip;
+
+        console.log(`Request IP: ${ip}`);
 
         if (isAllowedIp(ip)) return next();
 
