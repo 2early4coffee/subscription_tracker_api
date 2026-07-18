@@ -31,6 +31,9 @@ app.use(morgan(NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
 app.use(arcjetMiddleware);
 
 app.get('/', (req, res) => {
